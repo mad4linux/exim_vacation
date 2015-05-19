@@ -48,14 +48,14 @@ class exim_vacation extends rcube_plugin {
 		$this->message_active = $this->rcmail->config->get('exim_vacation_msg_active');
 		//set global vacation variables
 		$this->vacation_folder = $this->mailboxes_root . $_SESSION['username'] . "/" . $this->vacation_subfolder . "/";
-//		$this->vacation_recipients = $this->rcmail->config->get('exim_vacation_recipients_db');
+		$this->vacation_recipients = $this->rcmail->config->get('exim_vacation_recipients_db');
 	}
 
 	function preferences_sections_list($param_list)  {
 		$param_list['list']['exim_vacation'] = array(
 		'id' => 'exim_vacation', 'section' => $this->gettext('settings_tab'),
-		); //works, checked
-    	return $param_list;
+		);
+		return $param_list;
 	}
  
  	function preferences_list($param_list) {
@@ -129,8 +129,6 @@ class exim_vacation extends rcube_plugin {
 	}
 
 	function get_vacation_text($file) {
-		//print_r($_SESSION);
-		// execute command
 		$command = "cat " . $this->vacation_folder . $file;
 		unset($vacation_msg);
 		exec($command, $vacation_msg);
@@ -139,32 +137,32 @@ class exim_vacation extends rcube_plugin {
 	} 
 	
 	function check_vacation_folder() {
+		$command = "ls " . $this->vacation_folder . $this->message_passive;
+		exec($command, $output, $errors);
+		if ($errors == 0) { // message is inactive
+			if(is_writeable($this->vacation_folder . $this->message_passive)) {
+				return 4;
+			}
+			else { // passive message not writeable
+				return 7;
+			}
+		}	
+		$command = "ls " . $this->vacation_folder . $this->message_active;
+		exec($command, $output, $errors);
+		if ($errors == 0) { // message is active
+			if(is_writeable($this->vacation_folder . $this->message_active)) {
+				return 3;
+			}
+			else { // active message not writeable
+				return 6;
+			}
+		}
+		if (!is_writable($this->vacation_folder)) { // folder not writable
+			return 2;
+		}
 		$command = "ls " . $this->vacation_folder;
 		exec($command, $output, $errors);
 		if ($errors == 0) { // folder exists
-			if (!is_writable($this->vacation_folder)) { // folder not writable
-				return 2;
-			}
-			$command = "ls " . $this->vacation_folder . $this->message_active;
-			exec($command, $output, $errors);
-			if ($errors == 0) { // message is active
-				if(is_writeable($this->vacation_folder . $this->message_active)) {
-					return 3;
-				}
-				else { // active message not writeable
-					return 6;
-				}
-			}
-			$command = "ls " . $this->vacation_folder . $this->message_passive;
-			exec($command, $output, $errors);
-			if ($errors == 0) { // message is inactive
-				if(is_writeable($this->vacation_folder . $this->message_passive)) {
-					return 4;
-				}
-				else { // passive message not writeable
-					return 7;
-				}
-			}
 			return 5; // no existing message found
 		}
 		else { //folder doesn't exist
@@ -231,11 +229,20 @@ class exim_vacation extends rcube_plugin {
 		if ($errors == 0) { // message is inactive
 			$command = 'mv ' . $this->vacation_folder . $this->message_passive . " " . $this->vacation_folder . $this->message_active;
 			exec($command, $output, $errors);
-			// delete old recipients db -> doesn't work, exim file permissions to restricitive
-			// $command = "ls " . $this->vacation_folder . $this->vacation_recipients;
-			// exec($command, $output, $errors);
-			// if ($errors == 0) { // recipients file exists
-			//	$command = "rm " . $this->vacation_folder . $this->vacation_recipients;
+			// delete old recipients db -> trying with file rights 602 (o+w) for recipients list others can delete but not read
+			$command = "ls " . $this->vacation_folder . $this->vacation_recipients;  //cannot be checked with file rights 602?
+			exec($command, $output, $errors);
+			if ($errors > 0) {
+				echo "Could not ls recipients file<br>";
+				print_r($output);
+			}
+			//if ($errors == 0) { // recipients file exists
+				$command = "rm " . $this->vacation_folder . $this->vacation_recipients;
+				exec($command, $output, $errors);
+				if ($errors > 0) {
+					echo "Could not delete recipients file<br>";
+					print_r($output);
+				}
 			//}
 		}
 	}
