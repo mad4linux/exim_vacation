@@ -6,8 +6,8 @@ contibutors: none so far
 1. Purpose
 This plugin allows users of the webmail frontend to enable 
 and disable their exim4 vacation message. They can also edit 
-the text of the message. A recipientsList can be deleted upon
-activation of a vacation message.
+the text of the message. A recipients database can be deleted 
+upon activation of a vacation message.
 
 2. Basic function
 The plugin does not process any mails and send messages. It 
@@ -17,9 +17,8 @@ vacation messages. The plugin must be configured to the same
 path for the active message as the exim router's require_files
 option.
 The transport can use a recipients database for exims once 
-option.
-An existing old recipients database can be deleted on activation 
-of the message.
+option. An existing old recipients database can be deleted on 
+activation of the message.
 
 3. Configuration
 - Set exim4 up to send vacation messages when a vacation file is 
@@ -39,16 +38,17 @@ database. Must belong to the user exim4 is using to access it and
 to the group your php scripts are running under (usually your 
 webservers group). Both user and group need rwx permissions!
 E.g: If your user is called "john", your root set above is 
-"/home", and you set ".vacation" here", the full path will be:
+"/home", and you set ".vacation" here, the full path will be:
 /home/john/.vacation"
 
 $rcmail_config['exim_vacation_msg_active']
-The file that triggers exims vacation router
+The file that triggers exim's vacation router
 
 $rcmail_config['exim_vacation_msg_passive']
 The file to use to store the message text while the vacation
 message shall not be sent. Can be any valid file name different
 from above.
+
 $rcmail_config['exim_vacation_recipients_db']
 The file name for the recipients database set by the "once" 
 option in exim's vacation transport configuration. Exim must
