@@ -1,0 +1,65 @@
+exim_vacation plugin for roundcube webmail
+
+author: Daniel Savi, daniel.savi(AatT)gaess(dot it here)ch
+contibutors: none so far
+
+1. Purpose
+This plugin allows users of the webmail frontend to enable 
+and disable their exim4 vacation message. They can also edit 
+the text of the message. A recipientsList can be deleted upon
+activation of a vacation message.
+
+2. Basic function
+The plugin does not process any mails and send messages. It 
+relies on a properly configured exim vacation transport and 
+router. The exim router must require a file to start sending 
+vacation messages. The plugin must be configured to the same
+path for the active message as the exim router's require_files
+option.
+The transport can use a recipients database for exims once 
+option.
+An existing old recipients database can be deleted on activation 
+of the message.
+
+3. Configuration
+- Set exim4 up to send vacation messages when a vacation file is 
+present (require_files option in your router).
+- Set paramters in config.inc.php in the pugin directory:
+$rcmail_config['exim_vacation_mailboxes_root'] 
+Your servers  root directory for mailboxes. The plugin will add 
+the user name to this folder to find the user folder which 
+contains the vacation message folder. Your php script (aka your
+webserver) needs at least the execute privilege on this folder
+E.g: If you have system users for your mail, set this option to 
+"/home". If you have virtual users, use your virtual users root.
+
+$rcmail_config['exim_vacation_subfolder']
+The folder which contains your vacation message and recipients
+database. Must belong to the user exim4 is using to access it and
+to the group your php scripts are running under (usually your 
+webservers group). Both user and group need rwx permissions!
+E.g: If your user is called "john", your root set above is 
+"/home", and you set ".vacation" here", the full path will be:
+/home/john/.vacation"
+
+$rcmail_config['exim_vacation_msg_active']
+The file that triggers exims vacation router
+
+$rcmail_config['exim_vacation_msg_passive']
+The file to use to store the message text while the vacation
+message shall not be sent. Can be any valid file name different
+from above.
+$rcmail_config['exim_vacation_recipients_db']
+The file name for the recipients database set by the "once" 
+option in exim's vacation transport configuration. Exim must
+write this file into the same folder as the vacation message
+for this function to work, plus it must set the "mode" option in
+the transport to 0602 (add the line: mode = 0602)
+
+4. Usage
+Log in to roundcube.
+Go to settings.
+Find the vacation message tab and click on it
+Activate or deactivate the vacation message with the checkbox.
+Change the text in the text field
+Read status messages if anything goes wrong and try to fix it.
