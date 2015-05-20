@@ -67,7 +67,7 @@ class exim_vacation extends rcube_plugin {
 		$this->set_status_message($folder_errors);
 		
 		
-		if (!($folder_errors == 1) && !($folder_errors == 2) ) { // only show status information if folder not present or writable
+		if (!($folder_errors == 1) && !($folder_errors == 2) ) { // show only status information if folder not present or writable
 			// text frame for options
 			$param_list['blocks']['main']['name'] = $this->gettext('settings');
 
@@ -81,18 +81,27 @@ class exim_vacation extends rcube_plugin {
 			$param_list['blocks']['main']['options']['enable_vacation'] = array( 
 				'title'   => html::label($field_id, $field_text),
 				'content' => $input->show());
-
-			$field_id = 'rcmfd_exim_vacation_text';
-			$field_text = $this->gettext('vacation_text_field');
-			$input = new html_textarea(array(
-				'name'  => '_exim_vacation_text',
-				'id'    => $field_id,
-				'style' => 'width: 400px; height: 100px',
-				'value' => $this->textarray_content,
-				));
-			$param_list['blocks']['main']['options']['vacation_text'] = array( 
-			'title'   => html::label($field_id, $field_text),
-			'content' => $input->show());
+				
+			if (!($folder_errors == 6) && !($folder_errors == 7) ) { // message must be writable 
+				$field_id = 'rcmfd_exim_vacation_text';
+				$field_text = $this->gettext('vacation_text_field');
+				$input = new html_textarea(array(
+					'name'  => '_exim_vacation_text',
+					'id'    => $field_id,
+					'style' => 'width: 400px; height: 100px',
+					'value' => $this->textarray_content,
+					));
+				$param_list['blocks']['main']['options']['vacation_text'] = array( 
+				'title'   => html::label($field_id, $field_text),
+				'content' => $input->show());
+			}
+			else {  // only show vacation text if file not writeable
+				$field_id = 'rcmfd_exim_vacation_text';
+				$field_text = $this->gettext('vacation_text_field');
+				$param_list['blocks']['main']['options']['vacation_text'] = array( 
+				'title'   => html::label($field_id, $field_text),
+				'content' => $this->textarray_content);
+			}
 		}
 			
 		// status messages
@@ -131,9 +140,9 @@ class exim_vacation extends rcube_plugin {
 	function get_vacation_text($file) {
 		$command = "cat " . $this->vacation_folder . $file;
 		unset($vacation_msg);
-		exec($command, $vacation_msg);
+		exec($command, $vacation_msg, $errors);
+		// echo "Errors: ".$errors;
 		return $vacation_msg;
-		
 	} 
 	
 	function check_vacation_folder() {
@@ -200,17 +209,16 @@ class exim_vacation extends rcube_plugin {
 				$this->status_text =  $this->gettext('message_status_not_existing');
 				break;
 			case 6:
-				$this->status_text = $this->gettext('message_status_active') . " - " . $this->gettext('file_not_writable') . " " . $this->vacation_folder . $this->message_active;
-				break;
+				$this->status_text = $this->gettext('message_status_active') . " - " . $this->gettext('file_not_writable');
 				$this->message_status = false;
 				$vacation_txt = $this->get_vacation_text($this->message_active);
-				$this->textarray_content = $this->textarray2linebreaks($vacation_txt);
+				$this->textarray_content = $this->textarray2br($vacation_txt);
 				break;
 			case 7:
-				$this->status_text = $this->gettext('message_status_passive') . " - " . $this->gettext('file_not_writable') . " " . $this->vacation_folder . $this->message_passive;
+				$this->status_text = $this->gettext('message_status_passive') . " - " . $this->gettext('file_not_writable');
 				$this->message_status = true;
 				$vacation_txt = $this->get_vacation_text($this->message_passive);
-				$this->textarray_content = $this->textarray2linebreaks($vacation_txt);
+				$this->textarray_content = $this->textarray2br($vacation_txt);
 				break;
 		}
 	}
@@ -223,27 +231,28 @@ class exim_vacation extends rcube_plugin {
 		return $alllines;
 	}
 
+	function textarray2br($txtarray) {
+		$alllines = '';
+		foreach ($txtarray as $line) {
+			$alllines .= $line."<br>";
+		}
+		return $alllines;
+	}
+
+	
 	function enable_vacation_message() {
 		$command = "ls " . $this->vacation_folder . $this->message_passive;
 		exec($command, $output, $errors);
 		if ($errors == 0) { // message is inactive
 			$command = 'mv ' . $this->vacation_folder . $this->message_passive . " " . $this->vacation_folder . $this->message_active;
 			exec($command, $output, $errors);
-			// delete old recipients db -> trying with file rights 602 (o+w) for recipients list others can delete but not read
-			$command = "ls " . $this->vacation_folder . $this->vacation_recipients;  //cannot be checked with file rights 602?
+			// delete old recipients db needs at least file rights 602 (o+w) for recipients list others can delete but not read
+			$command = "ls " . $this->vacation_folder . $this->vacation_recipients;
 			exec($command, $output, $errors);
-			if ($errors > 0) {
-				echo "Could not ls recipients file<br>";
-				print_r($output);
-			}
-			//if ($errors == 0) { // recipients file exists
+			if ($errors == 0) { // recipients file exists
 				$command = "rm " . $this->vacation_folder . $this->vacation_recipients;
-				exec($command, $output, $errors);
-				if ($errors > 0) {
-					echo "Could not delete recipients file<br>";
-					print_r($output);
-				}
-			//}
+				exec($command, $output, $errors);  // no error reporting
+			}
 		}
 	}
 

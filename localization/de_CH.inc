@@ -11,4 +11,4 @@ $labels['folder_not_writeable'] = 'Kein Schreibrecht in Ordner für Abwesenheits
 $labels['message_status_active'] = 'Aktive Abwesenheitsnotiz gefunden';
 $labels['message_status_passive'] = 'Inaktive Abwesenheitsnotiz gefunden';
 $labels['message_status_not_existing'] = 'Keine bestehende Abwesenheitsnotiz im Verzeichnis gefunden';
-$labels['file_not_writable'] = 'Konfigurationsfehler. Kein Schreibrecht auf Datei:';
+$labels['file_not_writable'] = 'Nachricht kann nicht geändert werden. Kein Schreibrecht auf Datei.';
