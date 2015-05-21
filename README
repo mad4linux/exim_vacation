@@ -1,8 +1,5 @@
 exim_vacation plugin for roundcube webmail
 
-author: Daniel Savi, daniel.savi(AatT)gaess(dot it here)ch
-contibutors: none so far
-
 1. Purpose
 This plugin allows users of the webmail frontend to enable 
 and disable their exim4 vacation message. They can also edit 
@@ -23,7 +20,10 @@ activation of the message.
 3. Configuration
 - Set exim4 up to send vacation messages when a vacation file is 
 present (require_files option in your router).
+- Copy the file config.inc.php.dist to config.inc.php in the 
+plugin directory.
 - Set paramters in config.inc.php in the pugin directory:
+
 $rcmail_config['exim_vacation_mailboxes_root'] 
 Your servers  root directory for mailboxes. The plugin will add 
 the user name to this folder to find the user folder which 
@@ -63,3 +63,7 @@ Find the vacation message tab and click on it
 Activate or deactivate the vacation message with the checkbox.
 Change the text in the text field
 Read status messages if anything goes wrong and try to fix it.
+
+
+author: Daniel Savi, daniel.savi(AatT)gaess(dot it here)ch
+contibutors: none so far

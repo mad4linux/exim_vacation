@@ -40,8 +40,8 @@ class exim_vacation extends rcube_plugin {
 		$this->username = $_SESSION['username'];
 		$this->hostname = $_SESSION['imap_host'];
 
-		// load config.inc.php and get configuration
-		$this->load_config();
+		$this->load_config('config.inc.php.dist');
+		$this->load_config('config.inc.php');  // user settings here will overwrite distributed settings
 		$this->mailboxes_root = $this->rcmail->config->get('exim_vacation_mailboxes_root');
 		$this->vacation_subfolder = $this->rcmail->config->get('exim_vacation_subfolder');
 		$this->message_passive = $this->rcmail->config->get('exim_vacation_msg_passive');
